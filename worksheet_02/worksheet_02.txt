@@ -1,0 +1,79 @@
+Client compiled?
+----------------------------------------------------------------------------------------------------
+Compiled with warnings:
+
+paul@pmd-7520:~/compsci/cnos_os/worksheet_02/sockets$ gcc -Wall dayclient.c -o dayclient
+dayclient.c: In function ‘main’:
+dayclient.c:67:3: warning: implicit declaration of function ‘exit’ [-Wimplicit-function-declaration]
+   exit( 0);
+   ^
+dayclient.c:67:3: warning: incompatible implicit declaration of built-in function ‘exit’
+dayclient.c:67:3: note: include ‘<stdlib.h>’ or provide a declaration of ‘exit’
+
+Solution: add #include <stdlib.h>
+----------------------------------------------------------------------------------------------------
+
+What happens when using names?
+---------------------------------
+inet_aton error for <name>
+---------------------------------
+
+dayserver compiled?
+---------------------------------
+Compiled with warnings:
+
+paul@pmd-7520:~/compsci/cnos_os/worksheet_02/sockets$ gcc -Wall dayserver.c -o dayserver
+dayserver.c: In function ‘main’:
+dayserver.c:60:62: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+     connfd = accept( listenfd, (struct sockaddr *) &cliaddr, &lenstruct);
+                                                              ^
+In file included from dayserver.c:11:0:
+/usr/include/x86_64-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * restrict {aka unsigned int * restrict}’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+
+Solution(s): cast (socklen_t*)
+---------------------------------
+
+PS & netstat -ap?
+---------------------------------
+PID 3108
+3002/dayserver
+tcp        0      0 *:daytime               *:*                     LISTEN
+---------------------------------
+
+telnet results? your server.
+---------------------------------
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+Mon Oct 10 16:39:50 2016
+Connection closed by foreign host.
+---------------------------------
+
+telnet results? other server.
+---------------------------------
+
+---------------------------------
+
+dServName compiled?
+---------------------------------
+Yes
+---------------------------------
+
+PS & netstat -ap?
+---------------------------------
+PID 2015
+3872/dayserverNames
+tcp        0      0 *:daytime               *:*                     LISTEN
+---------------------------------
+
+telnet results? your server.
+---------------------------------
+The client name is localhost
+Addr of connected client: 127.0.0.1
+---------------------------------
+
+telnet results? other server.
+---------------------------------
+
+---------------------------------
