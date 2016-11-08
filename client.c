@@ -12,7 +12,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
-#include <netdb.h>        /* for gethostbyname() */
+#include <netdb.h>
 #include "sntp.h"
 
 #define PORT 123         /* server port the client connects to */
