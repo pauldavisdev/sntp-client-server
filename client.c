@@ -1,6 +1,6 @@
-/*  talker.c - a datagram 'client'
+/*  client.c - a datagram 'client'
  *  need to supply host name/IP and one word message
- *  e.g. talker localhost hello
+ *  e.g. client localhost hello
  */
 
 #include <stdio.h>
@@ -10,11 +10,13 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>        /* for gethostbyname() */
+#include "sntp.h"
 
 #define PORT 123         /* server port the client connects to */
+#define MAXBUFLEN 100
 
 int main(int argc, char const *argv[]) {
   int sockfd, numbytes;
@@ -22,18 +24,18 @@ int main(int argc, char const *argv[]) {
   struct sockaddr_in their_addr; /* server addr info */
 
   if(argc != 3) {
-    fprintf(stderr, "usage: talker hostname message\n");
+    fprintf(stderr, "usage: client hostname message\n");
     exit(1);
   }
 
   /* resolve server host name or IP address */
   if((he = gethostbyname(argv[1])) == NULL) {
-    perror("Talker gethostbyname");
+    perror("client gethostbyname");
     exit(1);
   }
 
   if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    perror("Talker socket");
+    perror("client socket");
     exit(1);
   }
 
@@ -44,7 +46,7 @@ int main(int argc, char const *argv[]) {
 
   if((numbytes = sendto(sockfd, argv[2], strlen(argv[2]), 0,
       (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
-    perror("Talker sendto");
+    perror("client sendto");
     exit(1);
   }
 
