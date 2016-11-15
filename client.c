@@ -15,7 +15,7 @@
 #include <netdb.h>
 #include "sntp.h"
 
-#define PORT 123         /* server port the client connects to */
+#define PORT 4950         /* server port the client connects to */
 #define MAXBUFLEN 100
 
 int main(int argc, char const *argv[]) {

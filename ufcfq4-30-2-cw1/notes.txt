@@ -2,3 +2,11 @@ timestamp
   timeval
 
   ntp_timestamp currentTimeStamp()
+
+time-a.nist.gov
+UNICAST
+Client
+- Initialize NTP message header
+- Send request to server
+- Strip time of day from transmitTimestamp field of reply
+  - All NTP header fields are set to 0, except Mode, VN and transmitTimestamp
