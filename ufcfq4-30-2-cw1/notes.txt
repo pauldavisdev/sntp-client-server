@@ -6,7 +6,17 @@ timestamp
 time-a.nist.gov
 UNICAST
 Client
-- Initialize NTP message header
+- Initialize NTP message header packet
+  - li set to 0
+  - vn set to 4
+  - mode set to 3
 - Send request to server
+- gettimeofday
+- unix to ntp
 - Strip time of day from transmitTimestamp field of reply
   - All NTP header fields are set to 0, except Mode, VN and transmitTimestamp
+
+  chronos.csr.net
+
+NTP data are specified as integer or Fixed-point quantities, with bits numbered
+in big-endian format from 0 starting at the left or most significant end.
