@@ -15,22 +15,27 @@
 #include <netdb.h>
 #include "sntp.h"
 
-#define PORT 4950         /* server port the client connects to */
-#define MAXBUFLEN 100
+#define PORT 123         /* server port the client connects to */
 
 int main(int argc, char const *argv[]) {
   int sockfd, numbytes;
-  struct hostent *he;
+  struct hostent *he;            /* server data struct */
   struct sockaddr_in their_addr; /* server addr info */
 
-  if(argc != 3) {
-    fprintf(stderr, "usage: client hostname message\n");
+  ntp_packet packet;
+  // zero packet struct
+  memset(&packet, 0, sizeof(packet));
+  // set the first 8 bits of struct, so li is 0, vn is 4, mode is 3
+  *((char *)&packet) = 0b00100011;
+
+  if(argc != 2) {
+    fprintf(stderr, "usage: client serverIP\n");
     exit(1);
   }
 
   /* resolve server host name or IP address */
   if((he = gethostbyname(argv[1])) == NULL) {
-    perror("client gethostbyname");
+    perror("server gethostbyname");
     exit(1);
   }
 
@@ -39,12 +44,14 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
+
+
   memset(&their_addr, 0, sizeof(their_addr));
   their_addr.sin_family = AF_INET;
   their_addr.sin_port = htons(PORT);
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
-  if((numbytes = sendto(sockfd, argv[2], strlen(argv[2]), 0,
+  if((numbytes = sendto(sockfd, (char*)&packet), sizeof(ntp_packet), 0,
       (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
     perror("client sendto");
     exit(1);
