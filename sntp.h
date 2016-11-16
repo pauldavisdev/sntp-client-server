@@ -1,4 +1,4 @@
-#define UNIX_EPOCH 0x83AA7E80;
+#define UNIX_EPOCH 0x83AA7E80;  // the seconds from Jan 1, 1900 to Jan 1, 1970
 
 typedef struct {
   uint32_t seconds;
@@ -11,10 +11,10 @@ typedef struct {
   unsigned mode   : 3;        /* Three-bit protocol number */
   uint8_t stratum;            /* Eight-bit stratum indicator */
   uint8_t pollInterval;       /* Eight-bit max poll interval */
-  int8_t precision;           /* Eight-bit precision (in seconds) */
+  uint8_t precision;           /* Eight-bit precision (in seconds) */
 
   /* Fixed-point indicating total roundtrip delay to primary reference source */
-  int32_t rootDelay;
+  uint32_t rootDelay;
 
   /* Fixed-point indicating max error due to clock freq tolerance in seconds*/
   uint32_t rootDispersion;
@@ -36,10 +36,11 @@ typedef struct {
 
 } ntp_packet;
 
+struct timeval unix_time;
 
 void convert_ntp_to_unix(struct ntp_time_t *ntp, struct timeval *unix_time)
 {
-    unix_time->tv_sec = ntp->second - UNIX_EPOCH; // the seconds from Jan 1, 1900 to Jan 1, 1970
+    unix_time->tv_sec = ntp->second - UNIX_EPOCH;
     unix_time->tv_usec = (uint32_t)( (double)ntp->fraction * 1.0e6 / (double)(1LL<<32) );
 }
 
