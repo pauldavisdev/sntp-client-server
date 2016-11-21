@@ -10,6 +10,17 @@ typedef struct {
 struct timeval tv;
 ntp_timestamp ntp_t;
 
+ntp_timestamp getCurrentTimestamp()
+{
+  ntp_timestamp current;
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+
+  convert_unix_to_ntp(&tv, &current);
+
+  return current;
+}
+
 typedef struct {
   unsigned li     : 2;        /* Two-bit Leap indicator */
   unsigned vn     : 3;        /* Three-bit version number indicator */
@@ -60,6 +71,6 @@ void convert_ntp_to_unix(ntp_timestamp *ntp, struct timeval *unix_time)
 
 void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp)
 {
-    ntp->second = unix_time->tv_sec + 0x83AA7E80;
+    ntp->second = unix_time->tv_sec + UNIX_EPOCH;
     ntp->fraction = (uint32_t)( (double)(unix_time->tv_usec+1) * (double)(1LL<<32) * 1.0e-6 );
 }
