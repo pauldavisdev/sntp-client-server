@@ -1,6 +1,5 @@
 /*  client.c - a datagram 'client'
- *  need to supply host name/IP and one word message
- *  e.g. client localhost hello
+ *
  */
 
 #include <stdio.h>
@@ -16,14 +15,15 @@
 #include "sntp.h"
 
 #define PORT 123         /* server port the client connects to */
-#define MAXBUFLEN 1024
 
 int main(int argc, char const *argv[]) {
   int sockfd, numbytes;
   struct hostent *he;            /* server data struct */
   struct sockaddr_in their_addr; /* server addr info */
 
+  // NTP server address
   char serverIP[] = "0.uk.pool.ntp.org";
+  // Initialise NTP packet struct
   ntp_packet packet;
   // zero packet struct
   memset(&packet, 0, sizeof(packet));
@@ -46,9 +46,9 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
+  printf("Packet left client at: \n");
   gettimeofday(&tv, NULL);
   print_unix_time(tv);
-
   convert_unix_to_ntp(&tv, &ntp_t);
   printf("NTP time: %ld.%ld \n", (long int)ntp_t.second, (long int)ntp_t.fraction);
 
@@ -57,21 +57,35 @@ int main(int argc, char const *argv[]) {
   their_addr.sin_port = htons(PORT);
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
-  if((numbytes = sendto(sockfd, ((char*)&packet), sizeof(ntp_packet), 0,
+  packet.transmitTimestamp = getCurrentTimestamp();
+  packet.transmitTimestamp.second = htonl(packet.transmitTimestamp.second);
+  packet.transmitTimestamp.fraction = htonl(packet.transmitTimestamp.fraction);
+
+  if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
       (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
     perror("client sendto");
     exit(1);
   }
 
-  ntp_packet recvBuf;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
   numbytes = 0;
 
-  if((numbytes = recvfrom(sockfd, (struct ntp_packet *)&recvBuf,
-  sizeof(recvBuf), 0, (struct sockaddr *) &their_addr, &addr_len)) == -1) {
+  if((numbytes = recvfrom(sockfd, &packet, sizeof(ntp_packet), 0,
+    (struct sockaddr *) &their_addr, &addr_len)) == -1) {
     perror("listener recv from");
     exit(1);
 }
+
+packet.transmitTimestamp.second = ntohl(packet.transmitTimestamp.second);
+packet.transmitTimestamp.fraction = ntohl(packet.transmitTimestamp.fraction);
+
+printf("\nPacket left server at: \n");
+convert_ntp_to_unix(&packet.transmitTimestamp, &tv);
+print_unix_time(tv);
+convert_unix_to_ntp(&tv, &ntp_t);
+printf("NTP time: %ld.%ld \n", (long int)ntp_t.second, (long int)ntp_t.fraction);
+
+printf("Stratum: %d \n", packet.stratum );
 
 close(sockfd);
 
