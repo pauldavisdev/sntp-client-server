@@ -48,7 +48,7 @@ int main(int argc, char const *argv[]) {
 
   printf("Packet left client at: \n");
   gettimeofday(&tv, NULL);
-  print_unix_time(tv);
+  print_unix_time(&tv);
   convert_unix_to_ntp(&tv, &ntp_t);
   printf("NTP time: %ld.%ld \n", (long int)ntp_t.second, (long int)ntp_t.fraction);
 
@@ -81,7 +81,7 @@ packet.transmitTimestamp.fraction = ntohl(packet.transmitTimestamp.fraction);
 
 printf("\nPacket left server at: \n");
 convert_ntp_to_unix(&packet.transmitTimestamp, &tv);
-print_unix_time(tv);
+print_unix_time(&tv);
 convert_unix_to_ntp(&tv, &ntp_t);
 printf("NTP time: %ld.%ld \n", (long int)ntp_t.second, (long int)ntp_t.fraction);
 
