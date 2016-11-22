@@ -49,8 +49,8 @@ int main(int argc, char const *argv[]) {
   printf("Packet left client at: \n");
   gettimeofday(&tv, NULL);
   print_unix_time(&tv);
-  convert_unix_to_ntp(&tv, &ntp_t);
-  printf("NTP time: %ld.%ld \n", (long int)ntp_t.second, (long int)ntp_t.fraction);
+  convert_unix_to_ntp(&tv, &ntp_temp);
+  printf("NTP time: %ld.%ld \n", (long int)ntp_temp.second, (long int)ntp_temp.fraction);
 
   memset(&their_addr, 0, sizeof(their_addr));
   their_addr.sin_family = AF_INET;
@@ -58,8 +58,8 @@ int main(int argc, char const *argv[]) {
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
   packet.transmitTimestamp = getCurrentTimestamp();
-  packet.transmitTimestamp.second = htonl(packet.transmitTimestamp.second);
-  packet.transmitTimestamp.fraction = htonl(packet.transmitTimestamp.fraction);
+  host_to_network(&packet);
+
 
   if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
       (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
@@ -70,22 +70,29 @@ int main(int argc, char const *argv[]) {
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
   numbytes = 0;
 
-  if((numbytes = recvfrom(sockfd, &packet, sizeof(ntp_packet), 0,
+  ntp_packet recvBuf;
+  memset(&recvBuf, 0, sizeof(recvBuf));
+
+  if((numbytes = recvfrom(sockfd, &recvBuf, sizeof(ntp_packet), 0,
     (struct sockaddr *) &their_addr, &addr_len)) == -1) {
     perror("listener recv from");
     exit(1);
 }
 
-packet.transmitTimestamp.second = ntohl(packet.transmitTimestamp.second);
-packet.transmitTimestamp.fraction = ntohl(packet.transmitTimestamp.fraction);
+host_to_network(&recvBuf);
 
 printf("\nPacket left server at: \n");
-convert_ntp_to_unix(&packet.transmitTimestamp, &tv);
+convert_ntp_to_unix(&recvBuf.transmitTimestamp, &tv);
 print_unix_time(&tv);
-convert_unix_to_ntp(&tv, &ntp_t);
-printf("NTP time: %ld.%ld \n", (long int)ntp_t.second, (long int)ntp_t.fraction);
 
-printf("Stratum: %d \n", packet.stratum );
+convert_unix_to_ntp(&tv, &ntp_temp);
+printf("NTP time: %ld.%ld \n", (long int)ntp_temp.second, (long int)ntp_temp.fraction);
+
+printf("Stratum: %d \n", recvBuf.stratum );
+
+if(recvBuf.mode & 0x07) {
+  printf("mode is 4");
+}
 
 close(sockfd);
 
