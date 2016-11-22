@@ -23,10 +23,13 @@ int main(int argc, char const *argv[]) {
 
   // NTP server address
   char serverIP[] = "0.uk.pool.ntp.org";
+
   // Initialise NTP packet struct
   ntp_packet packet;
+
   // zero packet struct
   memset(&packet, 0, sizeof(packet));
+
   // set the first 8 bits of struct, so li is 0, vn is 4, mode is 3
   *((char *)&packet) = 0b00100011;
 
@@ -58,6 +61,7 @@ int main(int argc, char const *argv[]) {
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
   packet.transmitTimestamp = getCurrentTimestamp();
+
   host_to_network(&packet);
 
 
@@ -89,10 +93,6 @@ convert_unix_to_ntp(&tv, &ntp_temp);
 printf("NTP time: %ld.%ld \n", (long int)ntp_temp.second, (long int)ntp_temp.fraction);
 
 printf("Stratum: %d \n", recvBuf.stratum );
-
-if(recvBuf.mode & 0x07) {
-  printf("mode is 4");
-}
 
 close(sockfd);
 
