@@ -38,3 +38,24 @@ void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp)
     ntp->second = unix_time->tv_sec + UNIX_EPOCH;
     ntp->fraction = (uint32_t)( (double)(unix_time->tv_usec+1) * (double)(1LL<<32) * 1.0e-6 );
 }
+
+void host_to_network(ntp_packet *p)
+{
+  p->transmitTimestamp.second = htonl(p->transmitTimestamp.second);
+  p->transmitTimestamp.fraction = htonl(p->transmitTimestamp.fraction);
+}
+
+void network_to_host(ntp_packet *p)
+{
+  p->li = ntohl(p->li);
+  p->vn = ntohl(p->vn);
+  p->mode = ntohl(p->mode);
+  p->transmitTimestamp.second = ntohl(p->transmitTimestamp.second);
+  p->transmitTimestamp.fraction = ntohl(p->transmitTimestamp.fraction);
+  p->refTimestamp.second = ntohl(p->refTimestamp.second);
+  p->refTimestamp.fraction = ntohl(p->refTimestamp.fraction);
+  p->recvTimestamp.second = ntohl(p->recvTimestamp.second);
+  p->recvTimestamp.fraction = ntohl(p->recvTimestamp.fraction);
+  p->orgTimestamp.second = ntohl(p->orgTimestamp.second);
+  p->orgTimestamp.fraction = ntohl(p->orgTimestamp.fraction);
+}
