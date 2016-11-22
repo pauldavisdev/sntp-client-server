@@ -14,9 +14,13 @@ typedef struct {
 } ntp_timestamp;
 
 typedef struct {
-  unsigned li     : 2;        /* Two-bit Leap indicator */
-  unsigned vn     : 3;        /* Three-bit version number indicator */
-  unsigned mode   : 3;        /* Three-bit protocol number */
+  uint8_t flags;
+  /* Eight-bit flags - leap indicator, version number and mode
+   0 1 2 3 4 5 6 7
+  +-+-+-+-+-+-+-+-+
+  |LI | VN  |Mode |
+  +-+-+-+-+-+-+-+-+
+  */
   uint8_t stratum;            /* Eight-bit stratum indicator */
   uint8_t pollInterval;       /* Eight-bit max poll interval */
   uint8_t precision;           /* Eight-bit precision (in seconds) */

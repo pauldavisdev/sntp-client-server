@@ -30,8 +30,16 @@ int main(int argc, char const *argv[]) {
   // zero packet struct
   memset(&packet, 0, sizeof(packet));
 
-  // set the first 8 bits of struct, so li is 0, vn is 4, mode is 3
-  *((char *)&packet) = 0b00100011;
+  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 3 */
+  // li
+  packet.flags = 0;
+  packet.flags <<= 3;
+  // vn
+  packet.flags |= 4;
+  packet.flags <<= 3;
+  // mode
+  packet.flags |= 3;
+
 
   /*if(argc != 2) {
     fprintf(stderr, "usage: client serverIP\n");
@@ -64,7 +72,6 @@ int main(int argc, char const *argv[]) {
 
   host_to_network(&packet);
 
-
   if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
       (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
     perror("client sendto");
@@ -93,6 +100,12 @@ convert_unix_to_ntp(&tv, &ntp_temp);
 printf("NTP time: %ld.%ld \n", (long int)ntp_temp.second, (long int)ntp_temp.fraction);
 
 printf("Stratum: %d \n", recvBuf.stratum );
+
+convert_ntp_to_unix(&recvBuf.recvTimestamp, &tv);
+print_unix_time(&tv);
+
+int mode = recvBuf.flags & 0x07;
+printf("%d\n", mode);
 
 close(sockfd);
 
