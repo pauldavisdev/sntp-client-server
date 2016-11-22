@@ -47,9 +47,9 @@ void host_to_network(ntp_packet *p)
 
 void network_to_host(ntp_packet *p)
 {
-  p->li = ntohl(p->li);
-  p->vn = ntohl(p->vn);
-  p->mode = ntohl(p->mode);
+  p->rootDelay = ntohl(p->rootDelay);
+  p->rootDispersion = ntohl(p->rootDispersion);
+  p->refIdentifier = ntohl(p->refIdentifier);
   p->transmitTimestamp.second = ntohl(p->transmitTimestamp.second);
   p->transmitTimestamp.fraction = ntohl(p->transmitTimestamp.fraction);
   p->refTimestamp.second = ntohl(p->refTimestamp.second);
