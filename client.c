@@ -57,11 +57,10 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  printf("Packet left client at: \n");
+  printf("\nSending..\n\n");
+
   gettimeofday(&tv, NULL);
   print_unix_time(&tv);
-  convert_unix_to_ntp(&tv, &ntp_temp);
-  printf("NTP time: %ld.%ld \n", (long int)ntp_temp.second, (long int)ntp_temp.fraction);
 
   memset(&their_addr, 0, sizeof(their_addr));
   their_addr.sin_family = AF_INET;
@@ -69,6 +68,15 @@ int main(int argc, char const *argv[]) {
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
   packet.transmitTimestamp = getCurrentTimestamp();
+
+/*  printf("Reference:\t");
+  print_ntp_time(&packet.refTimestamp);
+  printf("Originate:\t");
+  print_ntp_time(&packet.orgTimestamp);
+  printf("Receive:\t");
+  print_ntp_time(&packet.recvTimestamp);*/
+  printf("\nTransmit:\t");
+  print_ntp_time(&packet.transmitTimestamp);
 
   host_to_network(&packet);
 
@@ -78,8 +86,9 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
+  printf("\n\n\nReceiving..\n");
+
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
-  numbytes = 0;
 
   ntp_packet recvBuf;
   memset(&recvBuf, 0, sizeof(recvBuf));
@@ -90,24 +99,39 @@ int main(int argc, char const *argv[]) {
     exit(1);
 }
 
-host_to_network(&recvBuf);
+ntp_timestamp destTimestamp = getCurrentTimestamp();
 
-printf("\nPacket left server at: \n");
-convert_ntp_to_unix(&recvBuf.transmitTimestamp, &tv);
+network_to_host(&packet);
+network_to_host(&recvBuf);
+
+printf("\nReceived:\n\n");
+
+double offset = (((ntp_to_double(&recvBuf.recvTimestamp)) - ntp_to_double(&recvBuf.orgTimestamp)) -
+                ((ntp_to_double(&recvBuf.transmitTimestamp)) - ntp_to_double(&destTimestamp))) / 2;
+
+
+
+gettimeofday(&tv, NULL);
 print_unix_time(&tv);
+printf("%+f ", offset);
 
-convert_unix_to_ntp(&tv, &ntp_temp);
-printf("NTP time: %ld.%ld \n", (long int)ntp_temp.second, (long int)ntp_temp.fraction);
-
-printf("Stratum: %d \n", recvBuf.stratum );
-
-convert_ntp_to_unix(&recvBuf.recvTimestamp, &tv);
-print_unix_time(&tv);
-
+printf("s%d \n", recvBuf.stratum );
 int mode = recvBuf.flags & 0x07;
-printf("%d\n", mode);
+printf("Mode: %d\n", mode);
 
-close(sockfd);
+/*printf("Reference:\t");
+print_ntp_time(&recvBuf.refTimestamp);
+printf("Originate:\t");
+print_ntp_time(&recvBuf.orgTimestamp);
+printf("Receive:\t");
+print_ntp_time(&recvBuf.recvTimestamp);
+printf("Transmit:\t");
+print_ntp_time(&recvBuf.transmitTimestamp);
+printf("Destination:\t");
+print_ntp_time(&destTimestamp); */
+
+
+
 
   return 0;
 }

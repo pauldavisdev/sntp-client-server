@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <netdb.h>
+#include <math.h>
 #include "sntp.h"
 
 ntp_timestamp getCurrentTimestamp()
@@ -24,7 +25,12 @@ void print_unix_time(struct timeval *tv) {
     nowtm = localtime(&nowtime);
 
     strftime(tmbuf, sizeof (tmbuf), "%Y-%m-%d %H:%M:%S", nowtm);
-    printf("%s.%06d\n", tmbuf, (int)tv->tv_usec);
+    printf("%s.%06d ", tmbuf, (int)tv->tv_usec);
+}
+
+void print_ntp_time(ntp_timestamp *ntp)
+{
+  printf("%ld.%ld\n", (long int)ntp->second, (long int)ntp->fraction);
 }
 
 void convert_ntp_to_unix(ntp_timestamp *ntp, struct timeval *unix_time)
@@ -43,7 +49,7 @@ void host_to_network(ntp_packet *p)
 {
   p->rootDelay = htonl(p->rootDelay);
   p->rootDispersion = htonl(p->rootDispersion);
-  p->refIdentifier = ntohl(p->refIdentifier);
+  p->refIdentifier = htonl(p->refIdentifier);
   p->refTimestamp.second = htonl(p->refTimestamp.second);
   p->orgTimestamp.second = htonl(p->orgTimestamp.second);
   p->recvTimestamp.second = htonl(p->recvTimestamp.second);
@@ -59,4 +65,12 @@ void network_to_host(ntp_packet *p)
   p->refTimestamp.second = ntohl(p->refTimestamp.second);
   p->recvTimestamp.second = ntohl(p->recvTimestamp.second);
   p->orgTimestamp.second = ntohl(p->orgTimestamp.second);
+}
+
+double ntp_to_double(ntp_timestamp *p)
+{
+  double t1_s = (p->second);
+  double t1_f = (p->fraction) / (double)(1LL<<32);
+  t1_s += t1_f;
+  return t1_s;
 }
