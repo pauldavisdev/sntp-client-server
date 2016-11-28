@@ -25,7 +25,9 @@ void print_unix_time(struct timeval *tv) {
     nowtm = localtime(&nowtime);
 
     strftime(tmbuf, sizeof (tmbuf), "%Y-%m-%d %H:%M:%S", nowtm);
-    printf("%s.%06d ", tmbuf, (int)tv->tv_usec);
+    printf("%s.%06d", tmbuf, (int)tv->tv_usec);
+    strftime(tmbuf, sizeof (tmbuf), "%z", nowtm);
+    printf(" (%s) ", tmbuf);
 }
 
 void print_ntp_time(ntp_timestamp *ntp)
