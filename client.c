@@ -101,7 +101,6 @@ int main(int argc, char const *argv[]) {
 
 ntp_timestamp destTimestamp = getCurrentTimestamp();
 
-network_to_host(&packet);
 network_to_host(&recvBuf);
 
 printf("\nReceived:\n\n");
@@ -109,11 +108,13 @@ printf("\nReceived:\n\n");
 double offset = (((ntp_to_double(&recvBuf.recvTimestamp)) - ntp_to_double(&recvBuf.orgTimestamp)) +
                 ((ntp_to_double(&recvBuf.transmitTimestamp)) - ntp_to_double(&destTimestamp))) / 2;
 
-
+double delay = ( (ntp_to_double(&destTimestamp) - ntp_to_double(&recvBuf.orgTimestamp)) ) -
+               ( (ntp_to_double(&recvBuf.transmitTimestamp) - ntp_to_double(&recvBuf.recvTimestamp)) );
 
 gettimeofday(&tv, NULL);
 print_unix_time(&tv);
 printf("%+f ", offset);
+printf("%+f ", delay);
 
 printf("s%d \n", recvBuf.stratum );
 int mode = recvBuf.flags & 0x07;
