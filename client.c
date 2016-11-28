@@ -12,8 +12,8 @@
 #include <netdb.h>
 #include "sntp.h"
 
-#define PORT 123         /* server port the client connects to */
-//#define PORT 63333
+//#define PORT 123         /* server port the client connects to */
+#define PORT 63333
 
 int main(int argc, char const *argv[]) {
   int sockfd, numbytes;
@@ -21,8 +21,9 @@ int main(int argc, char const *argv[]) {
   struct sockaddr_in their_addr; /* server addr info */
 
   /* NTP server address */
-  char host[] = "0.uk.pool.ntp.org";
-  //char serverIP[] = "ntp.uwe.ac.uk"
+  //char host[] = "0.uk.pool.ntp.org";
+  //char host[] = "ntp.uwe.ac.uk";
+  char host[] = "localhost";
 
   /* Initialise and zero NTP packet struct */
   ntp_packet packet;
