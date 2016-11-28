@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 
 #define UNIX_EPOCH 0x83AA7E80;  // the seconds from Jan 1, 1900 to Jan 1, 1970
