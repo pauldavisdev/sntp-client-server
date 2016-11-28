@@ -106,7 +106,7 @@ network_to_host(&recvBuf);
 
 printf("\nReceived:\n\n");
 
-double offset = (((ntp_to_double(&recvBuf.recvTimestamp)) - ntp_to_double(&recvBuf.orgTimestamp)) -
+double offset = (((ntp_to_double(&recvBuf.recvTimestamp)) - ntp_to_double(&recvBuf.orgTimestamp)) +
                 ((ntp_to_double(&recvBuf.transmitTimestamp)) - ntp_to_double(&destTimestamp))) / 2;
 
 
