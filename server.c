@@ -12,8 +12,7 @@
  #include <netinet/in.h>
  #include <arpa/inet.h>
 
- #define MYPORT 4950    /* the port users connect to */
- #define MAXBUFLEN 100
+ #define MYPORT 63333    /* the port users connect to */
 
 int main(void) {
 
@@ -21,7 +20,9 @@ int main(void) {
   struct sockaddr_in my_addr;     /* info for my addr i.e. server */
   struct sockaddr_in their_addr;  /* client's address info */
   int addr_len, numbytes;
-  char buf[MAXBUFLEN];
+
+  ntp_packet packet;
+  memset(&packet, 0, sizeof(packet));
 
   if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     perror("Listener socket");
@@ -39,16 +40,16 @@ int main(void) {
   }
 
   addr_len = sizeof(struct sockaddr);
-  if((numbytes = recvfrom(sockfd, buf, MAXBUFLEN - 1, 0,
+
+  if((numbytes = recvfrom(sockfd, &packet, (sizeof)ntp_packet, 0,
               (struct sockaddr_in *)&their_addr, &addr_len)) == -1) {
       perror("Listener recvfrom");
       exit(1);
   }
 
-  printf("Got packet from %s\n", inet_ntoa(their_addr.sin_addr));
-  printf("Packet is %d bytes long\n", numbytes);
-  buf[numbytes] = '\0';   /* end of string */
-  printf("Packet contains \"%s\"\n", buf);
+
+  packet.recvTimestamp = getCurrentTimestamp();
+
 
   close(sockfd);
   return 0;
