@@ -84,3 +84,19 @@ double ntp_to_double(ntp_timestamp *p)
   t1_s += t1_f;
   return t1_s;
 }
+
+double calculate_offset(ntp_packet *p, ntp_timestamp *t)
+{
+  double offset = (((ntp_to_double(&p->recvTimestamp)) - ntp_to_double(&p->orgTimestamp)) +
+                  ((ntp_to_double(&p->transmitTimestamp)) - ntp_to_double(t))) / 2;
+
+  return offset;
+}
+
+double calculate_delay(ntp_packet *p, ntp_timestamp *t)
+{
+  double delay = (((ntp_to_double(t) - ntp_to_double(&p->orgTimestamp)) ) -
+                 ((ntp_to_double(&p->transmitTimestamp) - ntp_to_double(&p->recvTimestamp))));
+
+  return delay;
+}
