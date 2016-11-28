@@ -53,9 +53,13 @@ void host_to_network(ntp_packet *p)
   p->rootDispersion = htonl(p->rootDispersion);
   p->refIdentifier = htonl(p->refIdentifier);
   p->refTimestamp.second = htonl(p->refTimestamp.second);
+  p->refTimestamp.fraction = htonl(p->refTimestamp.fraction);
   p->orgTimestamp.second = htonl(p->orgTimestamp.second);
+  p->orgTimestamp.fraction = htonl(p->orgTimestamp.fraction);
   p->recvTimestamp.second = htonl(p->recvTimestamp.second);
+  p->recvTimestamp.fraction = htonl(p->recvTimestamp.fraction);
   p->transmitTimestamp.second = htonl(p->transmitTimestamp.second);
+  p->transmitTimestamp.fraction = htonl(p->transmitTimestamp.fraction);
 }
 
 void network_to_host(ntp_packet *p)
@@ -64,9 +68,13 @@ void network_to_host(ntp_packet *p)
   p->rootDispersion = ntohl(p->rootDispersion);
   p->refIdentifier = ntohl(p->refIdentifier);
   p->transmitTimestamp.second = ntohl(p->transmitTimestamp.second);
+  p->transmitTimestamp.fraction = ntohl(p->transmitTimestamp.fraction);
   p->refTimestamp.second = ntohl(p->refTimestamp.second);
+  p->refTimestamp.fraction = ntohl(p->refTimestamp.fraction);
   p->recvTimestamp.second = ntohl(p->recvTimestamp.second);
+  p->recvTimestamp.fraction = ntohl(p->recvTimestamp.fraction);
   p->orgTimestamp.second = ntohl(p->orgTimestamp.second);
+  p->orgTimestamp.fraction = ntohl(p->orgTimestamp.fraction);
 }
 
 double ntp_to_double(ntp_timestamp *p)
