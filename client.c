@@ -1,4 +1,4 @@
-/*  client.c - a datagram 'client'
+/*  client.c - SNTP client
  *
  */
 
@@ -57,7 +57,7 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  printf("\nSending..\n\n");
+  printf("Sending..\n");
 
   gettimeofday(&tv, NULL);
   print_unix_time(&tv);
@@ -69,15 +69,6 @@ int main(int argc, char const *argv[]) {
 
   packet.transmitTimestamp = getCurrentTimestamp();
 
-/*  printf("Reference:\t");
-  print_ntp_time(&packet.refTimestamp);
-  printf("Originate:\t");
-  print_ntp_time(&packet.orgTimestamp);
-  printf("Receive:\t");
-  print_ntp_time(&packet.recvTimestamp);*/
-  printf("\nTransmit:\t");
-  print_ntp_time(&packet.transmitTimestamp);
-
   host_to_network(&packet);
 
   if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
@@ -86,7 +77,7 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  printf("\n\n\nReceiving..\n");
+  printf("\n\nReceiving..\n");
 
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
 
@@ -103,36 +94,15 @@ ntp_timestamp destTimestamp = getCurrentTimestamp();
 
 network_to_host(&recvBuf);
 
-printf("\nReceived:\n\n");
+printf("\nReceived:\n");
 
-double offset = (((ntp_to_double(&recvBuf.recvTimestamp)) - ntp_to_double(&recvBuf.orgTimestamp)) +
-                ((ntp_to_double(&recvBuf.transmitTimestamp)) - ntp_to_double(&destTimestamp))) / 2;
-
-double delay = ( (ntp_to_double(&destTimestamp) - ntp_to_double(&recvBuf.orgTimestamp)) ) -
-               ( (ntp_to_double(&recvBuf.transmitTimestamp) - ntp_to_double(&recvBuf.recvTimestamp)) );
-
-gettimeofday(&tv, NULL);
-print_unix_time(&tv);
-printf("%+f ", offset);
-printf("%+f ", delay);
-
-printf("s%d \n", recvBuf.stratum );
+double offset = calculate_offset(&recvBuf, &destTimestamp);
+double delay = calculate_delay(&recvBuf, &destTimestamp);
 int mode = recvBuf.flags & 0x07;
+
+print_unix_time(&tv);
+printf("%+f +/- %f s%d ", offset, delay, recvBuf.stratum);
 printf("Mode: %d\n", mode);
-
-/*printf("Reference:\t");
-print_ntp_time(&recvBuf.refTimestamp);
-printf("Originate:\t");
-print_ntp_time(&recvBuf.orgTimestamp);
-printf("Receive:\t");
-print_ntp_time(&recvBuf.recvTimestamp);
-printf("Transmit:\t");
-print_ntp_time(&recvBuf.transmitTimestamp);
-printf("Destination:\t");
-print_ntp_time(&destTimestamp); */
-
-
-
 
   return 0;
 }
