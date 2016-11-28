@@ -2,8 +2,6 @@
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -23,7 +21,8 @@ int main(int argc, char const *argv[]) {
 
   // NTP server address
   char serverIP[] = "0.uk.pool.ntp.org";
-
+  //char serverIP[] = "ntp.uwe.ac.uk"
+  
   // Initialise NTP packet struct
   ntp_packet packet;
 
@@ -103,6 +102,10 @@ int mode = recvBuf.flags & 0x07;
 print_unix_time(&tv);
 printf("%+f +/- %f s%d ", offset, delay, recvBuf.stratum);
 printf("Mode: %d\n", mode);
+
+char str[INET_ADDRSTRLEN];
+inet_ntop(AF_INET, &(their_addr.sin_addr), str, INET_ADDRSTRLEN);
+printf("%s %s\n", serverIP, str);
 
   return 0;
 }
