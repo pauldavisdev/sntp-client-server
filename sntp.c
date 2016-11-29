@@ -47,6 +47,18 @@ void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp)
     ntp->fraction = (uint32_t)( (double)(unix_time->tv_usec+1) * (double)(1LL<<32) * 1.0e-6 );
 }
 
+void print_packet(ntp_packet *p)
+{
+  printf("\nRef Timestamp: ");
+  print_ntp_time(&p->refTimestamp);
+  printf("\nOrg Timestamp: ");
+  print_ntp_time(&p->orgTimestamp);
+  printf("\nReceive Timestamp: ");
+  print_ntp_time(&p->recvTimestamp);
+  printf("\nTransmit Timestamp: ");
+  print_ntp_time(&p->transmitTimestamp);
+}
+
 void host_to_network(ntp_packet *p)
 {
   p->rootDelay = htonl(p->rootDelay);
@@ -115,4 +127,19 @@ void set_client_flags(ntp_packet *p)
   p->flags <<= 3;
   // mode
   p->flags |= 3;
+}
+
+/* server functions */
+
+void set_server_flags(ntp_packet *p)
+{
+  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 4 */
+  // li
+  p->flags = 0;
+  p->flags <<= 3;
+  // vn
+  p->flags |= 4;
+  p->flags <<= 3;
+  // mode
+  p->flags |= 4;
 }

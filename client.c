@@ -22,8 +22,8 @@ int main(int argc, char const *argv[]) {
 
   /* NTP server address */
   //char host[] = "0.uk.pool.ntp.org";
-  //char host[] = "ntp.uwe.ac.uk";
-  char host[] = "localhost";
+  char host[] = "ntp.uwe.ac.uk";
+  //char host[] = "localhost";
 
   /* Initialise and zero NTP packet structs for to send and receive */
   ntp_packet packet;
@@ -58,6 +58,8 @@ int main(int argc, char const *argv[]) {
 
   /* transmit timestamp set to current time in NTP timestamp format */
   packet.transmitTimestamp = getCurrentTimestamp();
+
+  print_packet(&packet);
 
   /* host to network byte order */
   host_to_network(&packet);
@@ -105,6 +107,8 @@ inet_ntop(AF_INET, &(their_addr.sin_addr), str, INET_ADDRSTRLEN);
 printf("%s %s\n", host, str);
 
 printf("Mode: %d\n", mode);
+
+print_packet(&packet);
 
   return 0;
 }

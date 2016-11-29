@@ -57,6 +57,8 @@ void print_unix_time(struct timeval *tv);
 
 void print_ntp_time(ntp_timestamp *ntp);
 
+void print_packet(ntp_packet *p);
+
 void convert_ntp_to_unix(ntp_timestamp *ntp, struct timeval *unix_time);
 
 void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp);
@@ -73,3 +75,6 @@ double calculate_delay(ntp_packet *p, ntp_timestamp *t);
 
 /* unicast-client functions to be in seperate header file */
 void set_client_flags(ntp_packet *p);
+
+/* server functions to be in seperate header file */
+void set_server_flags(ntp_packet *p);

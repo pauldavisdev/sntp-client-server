@@ -56,15 +56,8 @@ while(1)
 
   packet.recvTimestamp = getCurrentTimestamp();
   packet.orgTimestamp = packet.transmitTimestamp;
-  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 4 */
-  // li
-  packet.flags = 0;
-  packet.flags <<= 3;
-  // vn
-  packet.flags |= 4;
-  packet.flags <<= 3;
-  // mode
-  packet.flags |= 4;
+
+  set_server_flags(&packet);
 
   packet.stratum = 1;
   packet.orgTimestamp = packet.transmitTimestamp;
