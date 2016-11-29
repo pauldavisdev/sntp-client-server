@@ -57,6 +57,10 @@ void print_packet(ntp_packet *p)
   print_ntp_time(&p->recvTimestamp);
   printf("\nTransmit Timestamp: ");
   print_ntp_time(&p->transmitTimestamp);
+
+  /* get mode as int to print */
+  int mode = p->flags & 0x07;
+  printf("Mode: %d\n", mode);
 }
 
 void host_to_network(ntp_packet *p)

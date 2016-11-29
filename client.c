@@ -93,9 +93,6 @@ printf("\nReceived:\n");
 double offset = calculate_offset(&packet, &destTimestamp);
 double delay = calculate_delay(&packet, &destTimestamp);
 
-/* get mode as int to print */
-int mode = packet.flags & 0x07;
-
 print_unix_time(&tv);
 
 /* print offset and delay */
@@ -105,8 +102,6 @@ printf("%+f +/- %f s%d ", offset, delay, packet.stratum);
 char str[INET_ADDRSTRLEN];
 inet_ntop(AF_INET, &(their_addr.sin_addr), str, INET_ADDRSTRLEN);
 printf("%s %s\n", host, str);
-
-printf("Mode: %d\n", mode);
 
 print_packet(&packet);
 
