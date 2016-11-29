@@ -42,22 +42,20 @@ int main(void) {
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
 
   ntp_packet packet;
-  ntp_packet recvBuf;
   memset(&packet, 0, sizeof(ntp_packet));
-  memset(&recvBuf, 0, sizeof(ntp_packet));
 
 while(1)
 {
-  if((numbytes = recvfrom(sockfd, &recvBuf, sizeof(ntp_packet), 0,
+  if((numbytes = recvfrom(sockfd, &packet, sizeof(ntp_packet), 0,
     (struct sockaddr *) &their_addr, &addr_len)) == -1) {
     perror("listener recv from");
     exit(1);
 }
 
-  network_to_host(&recvBuf);
+  network_to_host(&packet);
 
   packet.recvTimestamp = getCurrentTimestamp();
-  packet.orgTimestamp = recvBuf.transmitTimestamp;
+  packet.orgTimestamp = packet.transmitTimestamp;
   /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 4 */
   // li
   packet.flags = 0;
@@ -69,7 +67,7 @@ while(1)
   packet.flags |= 4;
 
   packet.stratum = 1;
-  packet.orgTimestamp = recvBuf.transmitTimestamp;
+  packet.orgTimestamp = packet.transmitTimestamp;
   packet.transmitTimestamp = getCurrentTimestamp();
   /* host to network byte order */
   host_to_network(&packet);

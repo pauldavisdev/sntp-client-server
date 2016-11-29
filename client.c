@@ -12,8 +12,8 @@
 #include <netdb.h>
 #include "sntp.h"
 
-//#define PORT 123         /* server port the client connects to */
-#define PORT 63333
+#define PORT 123         /* server port the client connects to */
+//#define PORT 63333
 
 int main(int argc, char const *argv[]) {
   int sockfd, numbytes;
@@ -25,29 +25,11 @@ int main(int argc, char const *argv[]) {
   //char host[] = "ntp.uwe.ac.uk";
   char host[] = "localhost";
 
-  /* Initialise and zero NTP packet struct */
+  /* Initialise and zero NTP packet structs for to send and receive */
   ntp_packet packet;
   memset(&packet, 0, sizeof(packet));
 
-  /* Initialise and zero NTP packet recv buffer struct */
-  ntp_packet recvBuf;
-  memset(&recvBuf, 0, sizeof(recvBuf));
-
-  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 3 */
-  // li
-  packet.flags = 0;
-  packet.flags <<= 3;
-  // vn
-  packet.flags |= 4;
-  packet.flags <<= 3;
-  // mode
-  packet.flags |= 3;
-
-
-  /*if(argc != 2) {
-    fprintf(stderr, "usage: client serverIP\n");
-    exit(1);
-  }*/
+  set_client_flags(&packet);
 
   /* resolve server host name or IP address */
   if((he = gethostbyname(host)) == NULL) {
@@ -62,7 +44,9 @@ int main(int argc, char const *argv[]) {
 
   printf("Sending..\n");
 
+  /* get current unix time*/
   gettimeofday(&tv, NULL);
+
   /* print unix time before sending */
   print_unix_time(&tv);
 
@@ -89,7 +73,7 @@ int main(int argc, char const *argv[]) {
 
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
 
-  if((numbytes = recvfrom(sockfd, &recvBuf, sizeof(ntp_packet), 0,
+  if((numbytes = recvfrom(sockfd, &packet, sizeof(ntp_packet), 0,
     (struct sockaddr *) &their_addr, &addr_len)) == -1) {
     perror("listener recv from");
     exit(1);
@@ -99,21 +83,21 @@ int main(int argc, char const *argv[]) {
 ntp_timestamp destTimestamp = getCurrentTimestamp();
 
 /* network to host byte order */
-network_to_host(&recvBuf);
+network_to_host(&packet);
 
 printf("\nReceived:\n");
 
 /* calculate offset and delay using received packet and destination timestamp */
-double offset = calculate_offset(&recvBuf, &destTimestamp);
-double delay = calculate_delay(&recvBuf, &destTimestamp);
+double offset = calculate_offset(&packet, &destTimestamp);
+double delay = calculate_delay(&packet, &destTimestamp);
 
 /* get mode as int to print */
-int mode = recvBuf.flags & 0x07;
+int mode = packet.flags & 0x07;
 
 print_unix_time(&tv);
 
 /* print offset and delay */
-printf("%+f +/- %f s%d ", offset, delay, recvBuf.stratum);
+printf("%+f +/- %f s%d ", offset, delay, packet.stratum);
 
 /* server name to address and print */
 char str[INET_ADDRSTRLEN];
