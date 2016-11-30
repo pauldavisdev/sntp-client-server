@@ -3,8 +3,8 @@ all: client server
 client:
 CC = gcc
 CFLAGS = -Wall
-DEPS = sntp.h
-OBJ = client.o sntp.o
+DEPS = sntp.h client_functions.h
+OBJ = client.o sntp.o client_functions.o
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
