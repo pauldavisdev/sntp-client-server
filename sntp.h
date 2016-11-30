@@ -73,8 +73,5 @@ double calculate_offset(ntp_packet *p, ntp_timestamp *t);
 
 double calculate_delay(ntp_packet *p, ntp_timestamp *t);
 
-/* unicast-client functions to be in seperate header file */
-void set_client_flags(ntp_packet *p);
-
 /* server functions to be in seperate header file */
 void set_server_flags(ntp_packet *p);
