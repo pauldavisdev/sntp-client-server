@@ -1,8 +1,6 @@
 /*  client.c - SNTP client
  *
  */
-
-#include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
@@ -11,6 +9,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "sntp.h"
+#include "client_functions.h"
 
 #define PORT 123         /* server port the client connects to */
 //#define PORT 63333
@@ -21,15 +20,9 @@ int main(int argc, char const *argv[]) {
   struct sockaddr_in their_addr; /* server addr info */
 
   /* NTP server address */
-  //char host[] = "0.uk.pool.ntp.org";
-  char host[] = "ntp.uwe.ac.uk";
+  char host[] = "0.uk.pool.ntp.org";
+  //char host[] = "ntp.uwe.ac.uk";
   //char host[] = "localhost";
-
-  /* Initialise and zero NTP packet structs for to send and receive */
-  ntp_packet packet;
-  memset(&packet, 0, sizeof(packet));
-
-  set_client_flags(&packet);
 
   /* resolve server host name or IP address */
   if((he = gethostbyname(host)) == NULL) {
@@ -42,13 +35,26 @@ int main(int argc, char const *argv[]) {
     exit(1);
   }
 
-  printf("Sending..\n");
+  /* Initialise and zero NTP packet structs for to send and receive */
+  ntp_packet packet;
+  struct timeval tv;
+  memset(&packet, 0, sizeof(packet));
 
-  /* get current unix time*/
+  set_client_flags(&packet);
+
+  printf("Packet Sent:\n");
+
+  /* get current unix time and print */
   gettimeofday(&tv, NULL);
-
-  /* print unix time before sending */
   print_unix_time(&tv);
+
+  /* transmit timestamp set to current time in NTP timestamp format */
+  packet.transmitTimestamp = getCurrentTimestamp(&tv);
+
+  print_packet(&packet);
+
+  /* host to network byte order */
+  host_to_network(&packet);
 
   /* zero server address struct */
   memset(&their_addr, 0, sizeof(their_addr));
@@ -56,22 +62,12 @@ int main(int argc, char const *argv[]) {
   their_addr.sin_port = htons(PORT);
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
-  /* transmit timestamp set to current time in NTP timestamp format */
-  packet.transmitTimestamp = getCurrentTimestamp();
-
-  print_packet(&packet);
-
-  /* host to network byte order */
-  host_to_network(&packet);
-
   /* send packet */
   if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
       (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
     perror("client sendto");
     exit(1);
   }
-
-  printf("\n\nReceiving..\n");
 
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
 
@@ -82,12 +78,12 @@ int main(int argc, char const *argv[]) {
 }
 
 /* destination timestamp created on packet arrival for use in offset and delay */
-ntp_timestamp destTimestamp = getCurrentTimestamp();
+ntp_timestamp destTimestamp = getCurrentTimestamp(&tv);
 
 /* network to host byte order */
 network_to_host(&packet);
 
-printf("\nReceived:\n");
+printf("\nPacket Received:\n");
 
 /* calculate offset and delay using received packet and destination timestamp */
 double offset = calculate_offset(&packet, &destTimestamp);

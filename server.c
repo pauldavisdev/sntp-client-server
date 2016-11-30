@@ -42,6 +42,7 @@ int main(void) {
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
 
   ntp_packet packet;
+  struct timeval tv;
   memset(&packet, 0, sizeof(ntp_packet));
 
 while(1)
@@ -54,14 +55,14 @@ while(1)
 
   network_to_host(&packet);
 
-  packet.recvTimestamp = getCurrentTimestamp();
+  packet.recvTimestamp = getCurrentTimestamp(&tv);
   packet.orgTimestamp = packet.transmitTimestamp;
 
   set_server_flags(&packet);
 
   packet.stratum = 1;
   packet.orgTimestamp = packet.transmitTimestamp;
-  packet.transmitTimestamp = getCurrentTimestamp();
+  packet.transmitTimestamp = getCurrentTimestamp(&tv);
   /* host to network byte order */
   host_to_network(&packet);
 
