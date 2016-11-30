@@ -1,14 +1,11 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
-#include <netdb.h>
-#include <math.h>
 #include "sntp.h"
 
-ntp_timestamp getCurrentTimestamp()
+ntp_timestamp getCurrentTimestamp(struct timeval *tv)
 {
   ntp_timestamp current;
   gettimeofday(&tv, NULL);
@@ -91,30 +88,6 @@ void network_to_host(ntp_packet *p)
   p->recvTimestamp.fraction = ntohl(p->recvTimestamp.fraction);
   p->orgTimestamp.second = ntohl(p->orgTimestamp.second);
   p->orgTimestamp.fraction = ntohl(p->orgTimestamp.fraction);
-}
-
-double ntp_to_double(ntp_timestamp *p)
-{
-  double t1_s = (p->second);
-  double t1_f = (p->fraction) / (double)(1LL<<32);
-  t1_s += t1_f;
-  return t1_s;
-}
-
-double calculate_offset(ntp_packet *p, ntp_timestamp *t)
-{
-  double offset = (((ntp_to_double(&p->recvTimestamp)) - ntp_to_double(&p->orgTimestamp)) +
-                  ((ntp_to_double(&p->transmitTimestamp)) - ntp_to_double(t))) / 2;
-
-  return offset;
-}
-
-double calculate_delay(ntp_packet *p, ntp_timestamp *t)
-{
-  double delay = (((ntp_to_double(t) - ntp_to_double(&p->orgTimestamp)) ) -
-                 ((ntp_to_double(&p->transmitTimestamp) - ntp_to_double(&p->recvTimestamp))));
-
-  return delay;
 }
 
 
