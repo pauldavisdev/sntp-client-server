@@ -23,3 +23,6 @@ OBJ = server.o sntp.o
 
 server: $(OBJ)
 	gcc $(CFLAGS) -o $@ $^
+
+clean:
+	rm -f *.o client server client_functions sntp
