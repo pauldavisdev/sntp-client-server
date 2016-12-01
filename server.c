@@ -15,6 +15,8 @@
 
  #define MYPORT 63333    /* the port users connect to */
 
+ void set_server_reply(ntp_packet *p);
+
 int main(void) {
 
   int sockfd;
@@ -22,12 +24,13 @@ int main(void) {
   struct sockaddr_in their_addr;  /* client's address info */
   int numbytes;
 
+  ntp_packet packet;
+  memset(&packet, 0, sizeof(ntp_packet));
+
   if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
   perror("Listener socket");
   exit(1);
 }
-
-
 
   memset(&my_addr, 0, sizeof(my_addr)); /* zero my_addr struct */
   my_addr.sin_family = AF_INET;         /* host byte order ... */
@@ -41,38 +44,15 @@ int main(void) {
 
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
 
-  ntp_packet packet;
-  ntp_packet recvBuf;
-  memset(&packet, 0, sizeof(ntp_packet));
-  memset(&recvBuf, 0, sizeof(ntp_packet));
-
 while(1)
 {
-  if((numbytes = recvfrom(sockfd, &recvBuf, sizeof(ntp_packet), 0,
+  if((numbytes = recvfrom(sockfd, &packet, sizeof(ntp_packet), 0,
     (struct sockaddr *) &their_addr, &addr_len)) == -1) {
     perror("listener recv from");
     exit(1);
 }
 
-  network_to_host(&recvBuf);
-
-  packet.recvTimestamp = getCurrentTimestamp();
-  packet.orgTimestamp = recvBuf.transmitTimestamp;
-  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 4 */
-  // li
-  packet.flags = 0;
-  packet.flags <<= 3;
-  // vn
-  packet.flags |= 4;
-  packet.flags <<= 3;
-  // mode
-  packet.flags |= 4;
-
-  packet.stratum = 1;
-  packet.orgTimestamp = recvBuf.transmitTimestamp;
-  packet.transmitTimestamp = getCurrentTimestamp();
-  /* host to network byte order */
-  host_to_network(&packet);
+set_server_reply(&packet);
 
   /* send packet */
   if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
@@ -84,4 +64,28 @@ while(1)
 
   close(sockfd);
   return 0;
+}
+
+void set_server_reply(ntp_packet *p)
+{
+  network_to_host(p);
+
+  p->recvTimestamp = getCurrentTimestamp();
+  p->orgTimestamp = p->transmitTimestamp;
+
+  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 4 */
+  // li
+  p->flags = 0;
+  p->flags <<= 3;
+  // vn
+  p->flags |= 4;
+  p->flags <<= 3;
+  // mode
+  p->flags |= 4;
+  // set stratum to 1
+  p->stratum = 1;
+
+  p->transmitTimestamp = getCurrentTimestamp();
+
+  host_to_network(p);
 }
