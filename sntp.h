@@ -49,13 +49,13 @@ typedef struct {
 
 } ntp_packet;
 
+struct timeval tv;
+
 ntp_timestamp getCurrentTimestamp();
 
 void print_unix_time(struct timeval *tv);
 
 void print_ntp_time(ntp_timestamp *ntp);
-
-void print_packet(ntp_packet *p);
 
 void convert_ntp_to_unix(ntp_timestamp *ntp, struct timeval *unix_time);
 
@@ -65,5 +65,8 @@ void host_to_network(ntp_packet *p);
 
 void network_to_host(ntp_packet *p);
 
-/* server functions to be in seperate header file */
-void set_server_flags(ntp_packet *p);
+double ntp_to_double(ntp_timestamp *p);
+
+double calculate_offset(ntp_packet *p, ntp_timestamp *t);
+
+double calculate_delay(ntp_packet *p, ntp_timestamp *t);
