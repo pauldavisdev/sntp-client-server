@@ -15,6 +15,8 @@
 //#define PORT 123         /* server port the client connects to */
 #define PORT 63333
 
+void set_client_request(ntp_packet *p);
+
 int main(int argc, char const *argv[]) {
   int sockfd, numbytes;
   struct hostent *he;            /* server data struct */
@@ -32,17 +34,6 @@ int main(int argc, char const *argv[]) {
   /* Initialise and zero NTP packet recv buffer struct */
   ntp_packet recvBuf;
   memset(&recvBuf, 0, sizeof(recvBuf));
-
-  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 3 */
-  // li
-  packet.flags = 0;
-  packet.flags <<= 3;
-  // vn
-  packet.flags |= 4;
-  packet.flags <<= 3;
-  // mode
-  packet.flags |= 3;
-
 
   /*if(argc != 2) {
     fprintf(stderr, "usage: client serverIP\n");
@@ -72,11 +63,7 @@ int main(int argc, char const *argv[]) {
   their_addr.sin_port = htons(PORT);
   their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 
-  /* transmit timestamp set to current time in NTP timestamp format */
-  packet.transmitTimestamp = getCurrentTimestamp();
-
-  /* host to network byte order */
-  host_to_network(&packet);
+  set_client_request(&packet);
 
   /* send packet */
   if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
@@ -95,11 +82,11 @@ int main(int argc, char const *argv[]) {
     exit(1);
 }
 
-/* destination timestamp created on packet arrival for use in offset and delay */
-ntp_timestamp destTimestamp = getCurrentTimestamp();
-
 /* network to host byte order */
 network_to_host(&recvBuf);
+
+/* destination timestamp created on packet arrival for use in offset and delay */
+ntp_timestamp destTimestamp = getCurrentTimestamp();
 
 printf("\nReceived:\n");
 
@@ -123,4 +110,23 @@ printf("%s %s\n", host, str);
 printf("Mode: %d\n", mode);
 
   return 0;
+}
+
+void set_client_request(ntp_packet *p)
+{
+  /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 3 */
+  // li
+  p->flags = 0;
+  p->flags <<= 3;
+  // vn
+  p->flags |= 4;
+  p->flags <<= 3;
+  // mode
+  p->flags |= 3;
+
+  /* transmit timestamp set to current time in NTP timestamp format */
+  p->transmitTimestamp = getCurrentTimestamp();
+
+  /* host to network byte order */
+  host_to_network(p);
 }
