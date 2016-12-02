@@ -52,7 +52,7 @@ int main(int argc, char const *argv[]) {
 
   gettimeofday(&tv, NULL);
   /* print unix time before sending */
-  print_unix_time(&tv);
+  //print_unix_time(&tv);
 
   /* zero server address struct */
   memset(&their_addr, 0, sizeof(their_addr));
@@ -85,12 +85,15 @@ int main(int argc, char const *argv[]) {
 
   /* network to host byte order */
   network_to_host(&recvBuf);
+
+  printf("\n\nReceived:\n");
+
   check_reply(&packet, &recvBuf);
 
   /* destination timestamp created on packet arrival for use in offset and delay */
   ntp_timestamp destTimestamp = getCurrentTimestamp();
 
-  printf("\n\nReceived:\n");
+
 
   /* calculate offset and delay using received packet and destination timestamp */
   double offset = calculate_offset(&recvBuf, &destTimestamp);
@@ -147,7 +150,22 @@ void check_reply(ntp_packet *p, ntp_packet *r)
 
   if((p->transmitTimestamp.second != r->orgTimestamp.second) |
   (p->transmitTimestamp.fraction != r->orgTimestamp.fraction)) {
-    perror("invalid server reply");
+    perror("Invalid server reply - Originate timestamp");
+    exit(1);
+  }
+
+  if((r->flags & 0x07) != 4) {
+    perror("Invalid server reply - Mode");
+    exit(1);
+  }
+
+  if((r->stratum) == 0) {
+    perror("Invalid server reply - Stratum is 0");
+    exit(1);
+  }
+
+  if((r->transmitTimestamp.second && r->transmitTimestamp.fraction) == 0) {
+    perror("Invalid server reply - Transmit timestamp is 0");
     exit(1);
   }
 }
