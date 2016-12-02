@@ -18,6 +18,7 @@
 void set_client_request(ntp_packet *p);
 void print_sntp_output(ntp_packet *p, double offset, double delay,
                        struct sockaddr_in their_addr, char *host);
+void check_reply(ntp_packet *p, ntp_packet *r);
 
 int main(int argc, char const *argv[]) {
   int sockfd, portno, numbytes;
@@ -84,6 +85,7 @@ int main(int argc, char const *argv[]) {
 
   /* network to host byte order */
   network_to_host(&recvBuf);
+  check_reply(&packet, &recvBuf);
 
   /* destination timestamp created on packet arrival for use in offset and delay */
   ntp_timestamp destTimestamp = getCurrentTimestamp();
@@ -137,4 +139,15 @@ void print_sntp_output(ntp_packet *p, double offset, double delay,
   printf("%s %s\n", host, str);
 
   printf("Mode: %d\n", mode);
+}
+
+void check_reply(ntp_packet *p, ntp_packet *r)
+{
+  network_to_host(p);
+
+  if((p->transmitTimestamp.second != r->orgTimestamp.second) |
+  (p->transmitTimestamp.fraction != r->orgTimestamp.fraction)) {
+    perror("invalid server reply");
+    exit(1);
+  }
 }
