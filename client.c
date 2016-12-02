@@ -39,6 +39,8 @@ int main(int argc, char *argv[]) {
   else if (argc == 1) {
     strcpy(host, SERVER);
     portno = PORT;
+    printf("Server and port not specified.\n");
+    printf("Using default server: %s\nUsing default port: %d", host, portno);
   }
   else {
     fprintf(stderr, "usage: %s hostname port\n", argv[0]);
@@ -154,8 +156,8 @@ void check_reply(ntp_packet *p, ntp_packet *r)
 {
   network_to_host(p);
 
-  if((p->transmitTimestamp.second != r->orgTimestamp.second) |
-  (p->transmitTimestamp.fraction != r->orgTimestamp.fraction)) {
+  if((p->transmitTimestamp.second != r->orgTimestamp.second)
+  || (p->transmitTimestamp.fraction != r->orgTimestamp.fraction)) {
     perror("Invalid server reply - Originate timestamp");
     exit(1);
   }
