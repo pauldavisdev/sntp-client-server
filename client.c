@@ -11,8 +11,12 @@
 #include <netdb.h>
 #include "sntp.h"
 
-//#define PORT 123         /* server port the client connects to */
-//#define PORT 63333
+/* Default port and server to be used if none specified */
+#define PORT 123         /* server port the client connects to */
+#define SERVER "0.uk.pool.ntp.org"
+
+/* #define PORT 63333
+  #define SERVER "ntp.uwe.ac.uk" */
 
 /* Client functions*/
 void set_client_request(ntp_packet *p);
@@ -20,29 +24,33 @@ void print_sntp_output(ntp_packet *p, double offset, double delay,
                        struct sockaddr_in their_addr, char *host);
 void check_reply(ntp_packet *p, ntp_packet *r);
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char *argv[]) {
   int sockfd, portno, numbytes;
   struct hostent *he;            /* server data struct */
   struct sockaddr_in their_addr; /* server addr info */
+  socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
+  char host[255];
 
-  /* NTP server address */
-  //char host[] = "0.uk.pool.ntp.org";
-  //char host[] = "ntp.uwe.ac.uk";
-  //char host[] = "localhost";
-  char* host = (char *)argv[1];
-  portno = atoi(argv[2]);
-
-  if(argc != 3) {
+  /* Checks args */
+  if (argc == 3) {
+    strcpy(host, argv[1]);
+    portno = atoi(argv[2]);
+  }
+  else if (argc == 1) {
+    strcpy(host, SERVER);
+    portno = PORT;
+  }
+  else {
     fprintf(stderr, "usage: %s hostname port\n", argv[0]);
     exit(1);
   }
 
-  /* resolve server host name or IP address */
+  /* Resolve server host name or IP address */
   if((he = gethostbyname(host)) == NULL) {
     perror("client gethostbyname");
     exit(1);
   }
-
+  /* Create socket */
   if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     perror("client socket");
     exit(1);
@@ -50,11 +58,7 @@ int main(int argc, char const *argv[]) {
 
   printf("\nSending..\n");
 
-  gettimeofday(&tv, NULL);
-  /* print unix time before sending */
-  //print_unix_time(&tv);
-
-  /* zero server address struct */
+  /* Zero server address struct */
   memset(&their_addr, 0, sizeof(their_addr));
   their_addr.sin_family = AF_INET;
   their_addr.sin_port = htons(portno);
@@ -65,40 +69,42 @@ int main(int argc, char const *argv[]) {
   memset(&packet, 0, sizeof(packet));
   ntp_packet recvBuf;
   memset(&recvBuf, 0, sizeof(recvBuf));
-  /* Intial unicast set up of packet to be sent */
+
+  /* Set contents of unicast client msg */
   set_client_request(&packet);
 
-  /* send packet */
+  /* Send packet */
   if((numbytes = sendto(sockfd, &packet, sizeof(ntp_packet), 0,
       (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
     perror("client sendto");
     exit(1);
   }
 
-  socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
+  printf("Packet sent!");
 
+  /* Receive packet */
   if((numbytes = recvfrom(sockfd, &recvBuf, sizeof(ntp_packet), 0,
   (struct sockaddr *) &their_addr, &addr_len)) == -1) {
     perror("server recv from");
     exit(1);
   }
 
-  /* network to host byte order */
+  /* Network to host byte order */
   network_to_host(&recvBuf);
 
   printf("\n\nReceived:\n");
 
+  /* Perform basic checks to check validity of server reply */
   check_reply(&packet, &recvBuf);
 
-  /* destination timestamp created on packet arrival for use in offset and delay */
+  /* Destination timestamp created on packet arrival for use in offset and delay */
   ntp_timestamp destTimestamp = getCurrentTimestamp();
 
-
-
-  /* calculate offset and delay using received packet and destination timestamp */
+  /* Calculate offset and delay using received packet and destination timestamp */
   double offset = calculate_offset(&recvBuf, &destTimestamp);
   double delay = calculate_delay(&recvBuf, &destTimestamp);
 
+  /* Print formatted output */
   print_sntp_output(&recvBuf, offset, delay, their_addr, host);
 
   return 0;
