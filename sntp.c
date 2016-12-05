@@ -38,13 +38,13 @@ void print_ntp_time(ntp_timestamp *ntp)
 void convert_ntp_to_unix(ntp_timestamp *ntp, struct timeval *unix_time)
 {
     unix_time->tv_sec = ntp->second - UNIX_EPOCH;
-    unix_time->tv_usec = (uint32_t)( (double)ntp->fraction * 1.0e6 / (double)(1LL<<32) );
+    unix_time->tv_usec = (uint32_t)((double)ntp->fraction * 1.0e6 / (double)(1LL<<32) );
 }
 
 void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp)
 {
     ntp->second = unix_time->tv_sec + UNIX_EPOCH;
-    ntp->fraction = (uint32_t)( (double)(unix_time->tv_usec+1) * (double)(1LL<<32) * 1.0e-6 );
+    ntp->fraction = (uint32_t)((double)(unix_time->tv_usec+1) * (double)(1LL<<32) * 1.0e-6 );
 }
 
 void host_to_network(ntp_packet *p)

@@ -1,5 +1,5 @@
-/*  listener.c - a datagram socket 'server'
- *  displays message received then dies!
+/*  server.c - SNTP 'server'
+ *  Receives packet from client and replies
  */
 
  #include <stdio.h>
@@ -13,7 +13,7 @@
  #include <arpa/inet.h>
  #include "sntp.h"
 
- #define MYPORT 63333    /* the port users connect to */
+ #define MYPORT 63333    /* the port clients connect to */
 
  void set_server_reply(ntp_packet *p);
 
