@@ -12,7 +12,7 @@
 #include "sntp.h"
 
 /* Default port and server to be used if none specified */
-#define PORT 123         /* server port the client connects to */
+#define PORT 123
 #define SERVER "0.uk.pool.ntp.org"
 
 /* #define PORT 63333
@@ -46,16 +46,24 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "usage: %s hostname port\n", argv[0]);
     exit(1);
   }
+  /* End arg checks */
 
   /* Resolve server host name or IP address */
   if((he = gethostbyname(host)) == NULL) {
     perror("client gethostbyname");
     exit(1);
   }
+
   /* Create socket */
   if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
     perror("client socket");
     exit(1);
+  }
+
+  tv.tv_sec = 10;
+  tv.tv_usec = 0;
+  if((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv))) < 0) {
+    printf("socket timeout error no: %d", errno);
   }
 
   printf("\nSending..\n");
@@ -82,12 +90,10 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  printf("Packet sent!");
-
   /* Receive packet */
   if((numbytes = recvfrom(sockfd, &recvBuf, sizeof(ntp_packet), 0,
   (struct sockaddr *) &their_addr, &addr_len)) == -1) {
-    perror("server recv from");
+    perror("server recvfrom");
     exit(1);
   }
 
@@ -114,6 +120,11 @@ int main(int argc, char *argv[]) {
 
 /* Client functions*/
 
+/*  Function: set_client_request
+*   Description:
+*
+*   Parameters:
+*/
 void set_client_request(ntp_packet *p)
 {
   /* set up flag bitfield of struct, so li is 0, vn is 4, mode is 3 */
@@ -133,6 +144,11 @@ void set_client_request(ntp_packet *p)
   host_to_network(p);
 }
 
+/*  Function: print_sntp_output
+*   Description:
+*
+*   Parameters:
+*/
 void print_sntp_output(ntp_packet *p, double offset, double delay,
   struct sockaddr_in their_addr, char* host)
 {
@@ -152,6 +168,11 @@ void print_sntp_output(ntp_packet *p, double offset, double delay,
   printf("Mode: %d\n", mode);
 }
 
+/*  Function: check_reply
+*   Description:
+*
+*   Parameters:
+*/
 void check_reply(ntp_packet *p, ntp_packet *r)
 {
   network_to_host(p);
