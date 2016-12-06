@@ -8,6 +8,12 @@
 #include <math.h>
 #include "sntp.h"
 
+/*  Function: getCurrentTimestamp
+*   Description: Returns current time of day in NTP timestamp format
+*
+*   Parameters:
+*   Returns:
+*/
 ntp_timestamp getCurrentTimestamp()
 {
   ntp_timestamp current;
@@ -17,6 +23,11 @@ ntp_timestamp getCurrentTimestamp()
   return current;
 }
 
+/*  Function: print_unix_time
+*   Description:
+*
+*   Parameters:
+*/
 void print_unix_time(struct timeval *tv) {
     time_t nowtime;
     struct tm *nowtm;
@@ -30,23 +41,43 @@ void print_unix_time(struct timeval *tv) {
     printf(" (%s) ", tmbuf);
 }
 
+/*  Function: print_ntp_time
+*   Description:
+*
+*   Parameters:
+*/
 void print_ntp_time(ntp_timestamp *ntp)
 {
   printf("%ld.%ld\n", (long int)ntp->second, (long int)ntp->fraction);
 }
 
+/*  Function: convert_ntp_to_unix
+*   Description:
+*
+*   Parameters:
+*/
 void convert_ntp_to_unix(ntp_timestamp *ntp, struct timeval *unix_time)
 {
     unix_time->tv_sec = ntp->second - UNIX_EPOCH;
     unix_time->tv_usec = (uint32_t)((double)ntp->fraction * 1.0e6 / (double)(1LL<<32) );
 }
 
+/*  Function: convert_unix_to_ntp
+*   Description:
+*
+*   Parameters:
+*/
 void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp)
 {
     ntp->second = unix_time->tv_sec + UNIX_EPOCH;
     ntp->fraction = (uint32_t)((double)(unix_time->tv_usec+1) * (double)(1LL<<32) * 1.0e-6 );
 }
 
+/*  Function: host_to_network
+*   Description:
+*
+*   Parameters:
+*/
 void host_to_network(ntp_packet *p)
 {
   p->rootDelay = htonl(p->rootDelay);
@@ -62,6 +93,11 @@ void host_to_network(ntp_packet *p)
   p->transmitTimestamp.fraction = htonl(p->transmitTimestamp.fraction);
 }
 
+/*  Function: network_to_host
+*   Description:
+*
+*   Parameters:
+*/
 void network_to_host(ntp_packet *p)
 {
   p->rootDelay = ntohl(p->rootDelay);
@@ -77,6 +113,11 @@ void network_to_host(ntp_packet *p)
   p->orgTimestamp.fraction = ntohl(p->orgTimestamp.fraction);
 }
 
+/*  Function: ntp_to_double
+*   Description:
+*
+*   Parameters:
+*/
 double ntp_to_double(ntp_timestamp *p)
 {
   double t1_s = (p->second);
@@ -85,6 +126,11 @@ double ntp_to_double(ntp_timestamp *p)
   return t1_s;
 }
 
+/*  Function: calculate_offset
+*   Description:
+*
+*   Parameters:
+*/
 double calculate_offset(ntp_packet *p, ntp_timestamp *t)
 {
   double offset = (((ntp_to_double(&p->recvTimestamp)) - ntp_to_double(&p->orgTimestamp)) +
@@ -93,6 +139,11 @@ double calculate_offset(ntp_packet *p, ntp_timestamp *t)
   return offset;
 }
 
+/*  Function: calculate_delay
+*   Description:
+*
+*   Parameters:
+*/
 double calculate_delay(ntp_packet *p, ntp_timestamp *t)
 {
   double delay = (((ntp_to_double(t) - ntp_to_double(&p->orgTimestamp)) ) -
