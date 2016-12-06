@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
   char host[255];
 
-  /* Checks args */
+  /* Check args */
   if (argc == 3) {
     strcpy(host, argv[1]);
     portno = atoi(argv[2]);
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "usage: %s hostname port\n", argv[0]);
     exit(1);
   }
-  /* End arg checks */
+  /* End check args */
 
   /* Resolve server host name or IP address */
   if((he = gethostbyname(host)) == NULL) {
@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
+  /* Set timeout for sendto and recvfrom socket functions */
   tv.tv_sec = 10;
   tv.tv_usec = 0;
   if((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv))) < 0) {
