@@ -51,6 +51,18 @@ void print_ntp_time(ntp_timestamp *ntp)
   printf("%ld.%ld\n", (long int)ntp->second, (long int)ntp->fraction);
 }
 
+void print_ntp_packet(ntp_packet *p)
+{
+  printf("Ref timestamp: \t\t");
+  print_ntp_time(&p->refTimestamp);
+  printf("Org timestamp: \t\t");
+  print_ntp_time(&p->orgTimestamp);
+  printf("Recv timestamp: \t");
+  print_ntp_time(&p->recvTimestamp);
+  printf("Transmit timestamp: \t");
+  print_ntp_time(&p->transmitTimestamp);
+}
+
 /*  Function: convert_ntp_to_unix
 *   Description:
 *

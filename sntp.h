@@ -57,6 +57,8 @@ void print_unix_time(struct timeval *tv);
 
 void print_ntp_time(ntp_timestamp *ntp);
 
+void print_ntp_packet(ntp_packet *p);
+
 void convert_ntp_to_unix(ntp_timestamp *ntp, struct timeval *unix_time);
 
 void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp);
