@@ -66,9 +66,3 @@ void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp);
 void host_to_network(ntp_packet *p);
 
 void network_to_host(ntp_packet *p);
-
-double ntp_to_double(ntp_timestamp *p);
-
-double calculate_offset(ntp_packet *p, ntp_timestamp *t);
-
-double calculate_delay(ntp_packet *p, ntp_timestamp *t);
