@@ -28,7 +28,6 @@ int main(int argc, char *argv[]) {
   int sockfd, portno, numbytes;
   struct hostent *he;            /* server data struct */
   struct sockaddr_in their_addr; /* server addr info */
-  socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
   char host[255];
 
   /* Check args */
@@ -92,6 +91,7 @@ int main(int argc, char *argv[]) {
   }
 
   /* Receive packet */
+  socklen_t addr_len = (socklen_t)sizeof(struct sockaddr);
   if((numbytes = recvfrom(sockfd, &recvBuf, sizeof(ntp_packet), 0,
   (struct sockaddr *) &their_addr, &addr_len)) == -1) {
     perror("server recvfrom");
@@ -103,11 +103,11 @@ int main(int argc, char *argv[]) {
 
   printf("\n\nReceived:\n");
 
-  /* Perform basic checks to check validity of server reply */
-  check_reply(&packet, &recvBuf);
-
   /* Destination timestamp created on packet arrival for use in offset and delay */
   ntp_timestamp destTimestamp = getCurrentTimestamp();
+
+  /* Perform basic checks to check validity of server reply */
+  check_reply(&packet, &recvBuf);
 
   /* Calculate offset and delay using received packet and destination timestamp */
   double offset = calculate_offset(&recvBuf, &destTimestamp);
@@ -115,6 +115,8 @@ int main(int argc, char *argv[]) {
 
   /* Print formatted output */
   print_sntp_output(&recvBuf, offset, delay, their_addr, host);
+
+  print_ntp_packet(&recvBuf);
 
   return 0;
 }
@@ -140,7 +142,7 @@ void set_client_request(ntp_packet *p)
 
   /* transmit timestamp set to current time in NTP timestamp format */
   p->transmitTimestamp = getCurrentTimestamp();
-
+  print_ntp_packet(p);
   /* host to network byte order */
   host_to_network(p);
 }
@@ -180,22 +182,22 @@ void check_reply(ntp_packet *p, ntp_packet *r)
 
   if((p->transmitTimestamp.second != r->orgTimestamp.second)
   || (p->transmitTimestamp.fraction != r->orgTimestamp.fraction)) {
-    perror("Invalid server reply - Originate timestamp");
+    perror("Invalid server reply: Originate timestamp");
     exit(1);
   }
 
   if((r->flags & 0x07) != 4) {
-    perror("Invalid server reply - Mode");
+    perror("Invalid server reply: Mode");
     exit(1);
   }
 
-  if((r->stratum) == 0) {
-    perror("Invalid server reply - Stratum is 0");
+  if((r->stratum <= 0) || (r->stratum > 15)) {
+    perror("Invalid server reply: Stratum is too high or set to zero");
     exit(1);
   }
 
   if((r->transmitTimestamp.second && r->transmitTimestamp.fraction) == 0) {
-    perror("Invalid server reply - Transmit timestamp is 0");
+    perror("Invalid server reply: Transmit timestamp is 0");
     exit(1);
   }
 }
