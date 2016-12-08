@@ -1,5 +1,15 @@
-/*  client.c - SNTP client
+/*  client.c
+ *  SNTP      client
+ *  Usage:    Accepts 1 or 3 arguments from command line.
  *
+ *            Passing one argument will make the client switch to use the
+ *            default NTP server and default NTP port.
+ *
+ *            Accepts three arguments in the form:
+ *            ./client hostname portno
+ *            allows the user to specify a valid NTP server hostname and portno
+ *
+ *  Author:   Paul Davis
  */
 
 #include <errno.h>
