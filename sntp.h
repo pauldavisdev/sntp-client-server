@@ -7,6 +7,10 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+
+#ifndef SNTP_H
+#define SNTP_H
+
 #define UNIX_EPOCH 0x83AA7E80;  // the seconds from Jan 1, 1900 to Jan 1, 1970
 
 typedef struct {
@@ -66,3 +70,5 @@ void convert_unix_to_ntp(struct timeval *unix_time, ntp_timestamp *ntp);
 void host_to_network(ntp_packet *p);
 
 void network_to_host(ntp_packet *p);
+
+#endif
