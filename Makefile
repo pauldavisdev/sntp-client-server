@@ -15,15 +15,14 @@ client: $(OBJ)
 server:
 CC = gcc
 CFLAGS = -Wall
-DEPS = sntp.h
-OBJ = server.o sntp.o
+DEPS = sntp.h server_functions.h
+OBJ = server.o sntp.o server_functions.o
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 server: $(OBJ)
 	gcc $(CFLAGS) -o $@ $^
-
-
+	
 clean:
-	rm -f *.o client server sntp client_functions
+	rm -f *.o client server sntp client_functions server_functions
