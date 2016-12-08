@@ -10,6 +10,7 @@
  *            allows the user to specify a valid NTP server hostname and portno
  *
  *  Author:   Paul Davis
+ *  Date:     08/12/2016
  */
 
 #include <errno.h>

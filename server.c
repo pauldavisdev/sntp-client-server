@@ -1,5 +1,8 @@
 /*  server.c - SNTP 'server'
  *  Receives packet from client and replies
+ *
+ *  Author: Paul Davis
+ *  Date:   08/12/2016
  */
 
  #include <stdio.h>
