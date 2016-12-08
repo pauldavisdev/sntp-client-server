@@ -2,10 +2,16 @@
 
 #include "sntp.h"
 
-/*  Function: set_client_request
-*   Description:
+/*  Function:     set_client_request
 *
-*   Parameters:
+*   Description:  Initialises unicast client request packet to be sent to
+*   server. This involves setting the leap indicator, version number and mode.
+*   The Transmit Timestamp of the packet is then set to the current time of day.
+*   Finally, the packet is converted from host to network byte order.
+*
+*   Parameters:   ntp_packet*
+*
+*   Returns: none
 */
 void set_client_request(ntp_packet *p)
 {
@@ -26,10 +32,14 @@ void set_client_request(ntp_packet *p)
   host_to_network(p);
 }
 
-/*  Function: print_sntp_output
-*   Description:
+/*  Function:     print_sntp_output
+*   Description:  Prints formatted SNTP output in the form:
+*   [date][time][GMT offset][offset][delay][stratum][host name][host address]
 *
-*   Parameters:
+*   Parameters:   ntp_packet*, double offset, double delay,
+*                 struct sockaddr_in, char*
+*
+*   Returns:      none
 */
 void print_sntp_output(ntp_packet *p, double offset, double delay,
   struct sockaddr_in their_addr, char* host)
@@ -50,10 +60,21 @@ void print_sntp_output(ntp_packet *p, double offset, double delay,
   printf("Mode: %d\n", mode);
 }
 
-/*  Function: check_reply
-*   Description:
+/*  Function:     check_reply
 *
-*   Parameters:
+*   Description:  Performs basic checks to see if server reply is valid.
+*
+*   1. Check that Originate Timestamp in server reply matches the Transmit
+*      Timestamp in the original client request.
+*   2. Check that the mode field of server reply is as expected (4 for unicast).
+*   3. Check that the stratum field of server reply is not zero or greater than
+*      15.
+*   4. Finally, checks that the Transmit Timestamp in server reply is not set to
+*       zero.
+*
+*   Parameters: ntp_packet*, ntp_packet*
+*
+*   Returns:    none
 */
 void check_reply(ntp_packet *p, ntp_packet *r)
 {
